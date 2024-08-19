@@ -179,4 +179,4 @@ jobs:
         skipIfReleaseExists: false
         tag: continuous
         token: "${{ secrets.GITHUB_TOKEN }}"
-      if: ${{ success() && github.event_name == 'push' && env.GERBV_BUILDBOT_PAT  && !matrix.code_coverage }}
+      if: ${{ success() && github.event_name == 'push' && !matrix.code_coverage }}
