@@ -153,3 +153,30 @@ jobs:
       env:
         GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
       if: ${{ success() && github.event_name == 'push' && env.GERBV_BUILDBOT_PAT  && !matrix.code_coverage }}
+
+    - name: Delete previous continuous release
+      uses: dev-drprasad/delete-tag-and-release@v1.1
+      with:
+        tag_name: continuous
+        delete_release: true
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create continuous release
+      uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        artifacts: "continous_gerbv/*"
+        body: |
+          :heavy_check_mark:gerbv built from latest commit ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})).
+
+          :scroll: Build log: https://github.com/${{ github.repository }}/commit/${{ github.sha }}/checks?check_suite_id=${{ github.run_id }}
+        commit: ${{ github.sha }}
+        draft: false
+        name: Continuous build
+        prerelease: true
+        removeArtifacts: true
+        replacesArtifacts: true
+        skipIfReleaseExists: false
+        tag: continuous
+        token: "${{ secrets.GITHUB_TOKEN }}"
+      if: ${{ success() && github.event_name == 'push' && env.GERBV_BUILDBOT_PAT  && !matrix.code_coverage }}
