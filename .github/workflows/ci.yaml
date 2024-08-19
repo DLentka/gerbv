@@ -160,6 +160,7 @@ jobs:
         tag_name: continuous
         delete_release: true
         github_token: ${{ secrets.GITHUB_TOKEN }}
+      if: ${{ success() && github.event_name == 'push' && !matrix.code_coverage }}
 
     - name: Create continuous release
       uses: ncipollo/release-action@v1
