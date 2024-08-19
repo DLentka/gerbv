@@ -109,6 +109,7 @@ RELEASE_FILENAME="gerbv_${RELEASE_DATE}_${RELEASE_COMMIT_SHORT}_(${RELEASE_OS}).
 
 OS_SHORT=$(echo ${RELEASE_OS} | cut -d " " -f1)
 RELEASE_FILENAME_SHORT="gerbv_${OS_SHORT}.tar.gz"
+mkdir -p continous_gerbv
 "${TAR}" --directory="${TEMPORARY_DIRECTORY}" -czf "continous_gerbv/${RELEASE_FILENAME_SHORT}" '.'
 
 
