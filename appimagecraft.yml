@@ -1,0 +1,22 @@
+version: 1
+
+project:
+  name: org.gerbv.gerbv
+  version: 2.10.1
+
+build:
+  autotools:
+    source_dir: .
+    allow_insource: true
+    configure:
+
+appimage:
+  linuxdeploy:
+    plugins:
+      - gtk
+      #- qt
+      #- conda
+    # environment:
+    #   UPD_INFO: "zsync|http://foo.bar/baz.zsync"
+    # extra_args: -i "$BUILD_DIR"/example.svg -d "$BUILD_DIR"/example.desktop
+    extra_args:  --icon-file desktop/gerbv.png --desktop-file desktop/gerbv.desktop

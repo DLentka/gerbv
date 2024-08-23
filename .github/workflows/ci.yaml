@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - main
+      - dev
+    tags:
+      - "**"
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -113,55 +116,66 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: gerbv-lcov.info
 
-    - name: Rebuild Fedora 38
-      if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty fedora_38 .mc/rebuild.sh
+    # - name: Rebuild Fedora 38
+    #   if: "!matrix.code_coverage"
+    #   run: npx --package mini-cross@0.15.2 mc --no-tty fedora_38 .mc/rebuild.sh
 
-    - name: Rebuild Ubuntu 22.04
-      if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu_22.04 .mc/rebuild.sh
+    # - name: Rebuild Ubuntu 22.04
+    #   if: "!matrix.code_coverage"
+    #   run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu_22.04 .mc/rebuild.sh
 
     - name: Rebuild Debian 12
       if: "!matrix.code_coverage"
       run: npx --package mini-cross@0.15.2 mc --no-tty debian_12 .mc/rebuild.sh
 
-    - name: Rebuild Windows amd64
-      if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty windows_amd64 .mc/rebuild.sh
+    # - name: Rebuild Windows amd64
+    #   if: "!matrix.code_coverage"
+    #   run: npx --package mini-cross@0.15.2 mc --no-tty windows_amd64 .mc/rebuild.sh
 
-    - name: Upload executable artifacts
-      if: "!matrix.code_coverage"
-      uses: actions/upload-artifact@v3
-      with:
-        name: gerbv
-        path: gerbv.github.io/ci/gerbv*
-        if-no-files-found: error
+    # - name: Upload executable artifacts
+    #   if: "!matrix.code_coverage"
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: gerbv
+    #     path: gerbv.github.io/ci/gerbv*
+    #     if-no-files-found: error
 
-    - name: Rebuild gerbv.github.io
-      if: "!matrix.code_coverage"
-      run: |
-        npx --package mini-cross@0.15.2 mc --no-tty website make -C gerbv.github.io
-        find gerbv.github.io -type f -name '.gitignore' -exec rm {} \;
+    # - name: Rebuild gerbv.github.io
+    #   if: "!matrix.code_coverage"
+    #   run: |
+    #     npx --package mini-cross@0.15.2 mc --no-tty website make -C gerbv.github.io
+    #     find gerbv.github.io -type f -name '.gitignore' -exec rm {} \;
 
-    - name: Deploy gerbv.github.io
-      uses: JamesIves/github-pages-deploy-action@v4.4.1
-      with:
-        repository-name: gerbv/gerbv.github.io
-        branch: gh-pages
-        folder: gerbv.github.io
-        token: ${{ secrets.GERBV_BUILDBOT_PAT }}
-        git-config-name: gerbv-buildbot
-        git-config-email: violetland+gerbv@mail.ru
-        single-commit: true
-      # @see https://github.community/t/how-can-i-test-if-secrets-are-available-in-an-action/17911/10
-      env:
-        GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
-      if: ${{ success() && github.event_name == 'push' && env.GERBV_BUILDBOT_PAT  && !matrix.code_coverage }}
+    # - name: Deploy gerbv.github.io
+    #   uses: JamesIves/github-pages-deploy-action@v4.4.1
+    #   with:
+    #     repository-name: gerbv/gerbv.github.io
+    #     branch: gh-pages
+    #     folder: gerbv.github.io
+    #     token: ${{ secrets.GERBV_BUILDBOT_PAT }}
+    #     git-config-name: gerbv-buildbot
+    #     git-config-email: violetland+gerbv@mail.ru
+    #     single-commit: true
+    #   # @see https://github.community/t/how-can-i-test-if-secrets-are-available-in-an-action/17911/10
+    #   env:
+    #     GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
+    #   if: ${{ success() && github.event_name == 'push' && env.GERBV_BUILDBOT_PAT  && !matrix.code_coverage }}
+
+    - name: Package gerbv as an AppImage
+      if: "!matrix.code_coverage"
+      # run: |
+      #   make distclean
+      #   wget -c https://github.com/TheAssassin/appimagecraft/releases/download/continuous/appimagecraft-x86_64.AppImage
+      #   chmod +x appimagecraft-x86_64.AppImage
+      #   ./appimagecraft-x86_64.AppImage
+      #   rm appimagecraft-x86_64.AppImage
+      #   cp *.AppImage continous_gerbv
+      run: npx --package mini-cross@0.15.2 mc --no-tty appimage .mc/rebuild.sh
 
     - name: Delete previous continuous release
       uses: dev-drprasad/delete-tag-and-release@v1.1
       with:
-        tag_name: continuous
+        tag_name: continuousQQQ
         delete_release: true
         github_token: ${{ secrets.GITHUB_TOKEN }}
       if: ${{ success() && github.event_name == 'push' && !matrix.code_coverage }}
@@ -182,6 +196,42 @@ jobs:
         removeArtifacts: true
         replacesArtifacts: true
         skipIfReleaseExists: false
-        tag: continuous
+        tag: continuousQQQ
         token: "${{ secrets.GITHUB_TOKEN }}"
       if: ${{ success() && github.event_name == 'push' && !matrix.code_coverage }}
+
+    # - name: Set variables
+    #   run: |
+    #     echo "VERSION=\"${GITHUB_REF_NAME} $(date +'%Y-%m-%d')\"" >> $GITHUB_ENV
+    #     COUNT=0
+    #     TEXT=""
+    #     while read -r line; do
+    #         if [[ "===========" =~ "$line" ]]; then
+    #             (( COUNT+=1 ))
+    #         fi
+    #         if (( COUNT == 2 )); then
+    #             TEXT+="$line \n"
+    #         fi
+    #     done <NEWS
+    #     echo "CHANGELOG=${TEXT}" >> $GITHUB_ENV
+
+    # - name: Create versioned release
+    #   uses: ncipollo/release-action@v1
+    #   with:
+    #     allowUpdates: false
+    #     artifacts: "tag_gerbv/*"
+    #     body: |
+    #       **Version ${{ env.VERSION }}.**
+
+    #       ${{ env.CHANGELOG }}
+
+    #       Full [ChangeLog](https://github.com/gerbv/gerbv/blob/main/NEWS)
+    #     commit: ${{ github.sha }}
+    #     draft: true
+    #     name: ${{ github.ref_name }}
+    #     prerelease: false
+    #     replacesArtifacts: true
+    #     skipIfReleaseExists: true
+    #     tag: ${{ github.ref_name }}
+    #     token: "${{ secrets.GITHUB_TOKEN }}"
+    #   if: ${{ success() && github.event_name == 'push' && github.ref_name != 'main' && !matrix.code_coverage }}

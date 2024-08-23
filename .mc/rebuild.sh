@@ -11,5 +11,11 @@ sh autogen.sh
 /opt/configure.sh
 make clean
 make
+mkdir -p AppDir
+echo "### AppDir ###"
+find AppDir -type f 
+echo "### ls ###"
+ls
+echo "###  ###"
 /opt/package.sh
 
