@@ -4,6 +4,8 @@ name: CI
 # request events but only for the main branch
 on:
   push:
+    tags:
+      - "v*.*.*"
     branches:
       - main
   pull_request:
@@ -157,3 +159,56 @@ jobs:
       env:
         GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
       if: ${{ success() && github.event_name == 'push' && env.GERBV_BUILDBOT_PAT  && !matrix.code_coverage }}
+
+    - name: Prepare GH release
+      run: |
+        echo "RELEASE_DATE=$(date --rfc-3339=date)" >> ${GITHUB_ENV}
+        mkdir -p continous_release_dir
+        mkdir -p stable_release_dir
+        for file in gerbv.github.io/ci/gerbv*; do
+          EXT=${file##*)}
+          # gerbv.github.io/ci/gerbv_2025-06-11_180c67_(Fedora 38).tar.gz -> Fedora_38
+          mfile=${file/ /_}
+          mfile=${mfile/./_}
+          mfile=${mfile%)*}
+          OS_SHORT=${mfile##*(}
+          cp "$file" "continous_release_dir/gerbv_nightly_${OS_SHORT}${EXT}"
+          if [[ ${{ github.ref_type == 'tag' }} == true ]]; then
+            TAG="${{ github.ref_name }}"
+            cp "$file" "stable_release_dir/gerbv_${TAG}_${OS_SHORT}${EXT}"
+          fi
+        done
+      if: ${{ success() && github.event_name == 'push' && !matrix.code_coverage }}
+
+    - name: Create continuous release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: "continous_release_dir/*"
+        body: |
+          :heavy_check_mark:gerbv built from latest commit ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})) on ${{ env.RELEASE_DATE }}.
+
+          :scroll: Build log: https://github.com/${{ github.repository }}/commit/${{ github.sha }}/checks?check_suite_id=${{ github.run_id }}
+        draft: false
+        name: "Continuous build ${{ env.RELEASE_DATE }}"
+        prerelease: true
+        generate_release_notes: true
+        make_latest: "true"
+        tag_name: continuous_build
+        token: "${{ secrets.GITHUB_TOKEN }}"
+      if: ${{ success() && github.event_name == 'push' && !matrix.code_coverage}}
+
+    - name: Create stable release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: "stable_release_dir/*"
+        body: |
+          :heavy_check_mark:gerbv ${{ github.ref_name }} built from latest commit ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})) on ${{ env.RELEASE_DATE }}.
+
+          :scroll: Build log: https://github.com/${{ github.repository }}/commit/${{ github.sha }}/checks?check_suite_id=${{ github.run_id }}
+        target_commitish: ${{ github.ref_name }}
+        draft: true
+        prerelease: false
+        generate_release_notes: true
+        make_latest: "true"
+        token: "${{ secrets.GITHUB_TOKEN }}"
+      if: ${{ success() && github.event_name == 'push' && !matrix.code_coverage && github.ref_type == 'tag'}}
