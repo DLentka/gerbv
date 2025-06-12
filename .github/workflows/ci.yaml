@@ -163,7 +163,7 @@ jobs:
     - name: Prepare GH release
       run: |
         echo "RELEASE_DATE=$(date --rfc-3339=date)" >> ${GITHUB_ENV}
-        mkdir -p continous_release_dir
+        mkdir -p continuous_release_dir
         mkdir -p stable_release_dir
         for file in gerbv.github.io/ci/gerbv*; do
           EXT=${file##*)}
@@ -172,7 +172,7 @@ jobs:
           mfile=${mfile/./_}
           mfile=${mfile%)*}
           OS_SHORT=${mfile##*(}
-          cp "$file" "continous_release_dir/gerbv_nightly_${OS_SHORT}${EXT}"
+          cp "$file" "continuous_release_dir/gerbv_nightly_${OS_SHORT}${EXT}"
           if [[ ${{ github.ref_type == 'tag' }} == true ]]; then
             TAG="${{ github.ref_name }}"
             cp "$file" "stable_release_dir/gerbv_${TAG}_${OS_SHORT}${EXT}"
@@ -183,7 +183,7 @@ jobs:
     - name: Create continuous release
       uses: softprops/action-gh-release@v2
       with:
-        files: "continous_release_dir/*"
+        files: "continuous_release_dir/*"
         body: |
           :heavy_check_mark:gerbv built from latest commit ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})) on ${{ env.RELEASE_DATE }}.
 
