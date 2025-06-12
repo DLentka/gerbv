@@ -194,6 +194,7 @@ jobs:
         generate_release_notes: true
         make_latest: "true"
         tag_name: continuous_build
+        target_commitish: ${{ github.sha }}
         token: "${{ secrets.GITHUB_TOKEN }}"
       if: ${{ success() && github.event_name == 'push' && !matrix.code_coverage}}
 
