@@ -185,7 +185,7 @@ jobs:
       with:
         files: "continuous_release_dir/*"
         body: |
-          :heavy_check_mark:gerbv built from latest commit ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})) on ${{ env.RELEASE_DATE }}.
+          :heavy_check_mark:`gerbv` built from latest commit ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})) on ${{ env.RELEASE_DATE }}.
 
           :scroll: Build log: https://github.com/${{ github.repository }}/commit/${{ github.sha }}/checks?check_suite_id=${{ github.run_id }}
         draft: false
@@ -203,9 +203,7 @@ jobs:
       with:
         files: "stable_release_dir/*"
         body: |
-          :heavy_check_mark:gerbv ${{ github.ref_name }} built from latest commit ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})) on ${{ env.RELEASE_DATE }}.
-
-          :scroll: Build log: https://github.com/${{ github.repository }}/commit/${{ github.sha }}/checks?check_suite_id=${{ github.run_id }}
+          :heavy_check_mark:`gerbv ${{ github.ref_name }}` built from commit ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})) on ${{ env.RELEASE_DATE }}.
         target_commitish: ${{ github.sha }}
         draft: true
         prerelease: false
