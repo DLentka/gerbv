@@ -35,11 +35,15 @@ if ! ${GIT} rev-parse --is-inside-work-tree >& /dev/null ; then
 	exit 0
 fi
 
-# Get commit short id
-RELEASE_COMMIT=`"${GIT}" rev-parse HEAD`
-RELEASE_COMMIT_SHORT="${RELEASE_COMMIT:0:6}"
-
+GD=$(git describe --tags --match 'v*.*.*' --long)
+LAST_TAG=$(echo $GD | cut -d'-' -f1)
+COMMITS_SINCE_TAG=$(echo $GD | cut -d'-' -f2)
+SHA=$(echo $GD | cut -d'-' -f3)
 
 # Output final version
-echo -n "${PREFIX}~${RELEASE_COMMIT_SHORT}"
+if [[ $COMMITS_SINCE_TAG == '0' ]]; then
+	echo -n "$LAST_TAG"
+else
+	echo -n "${LAST_TAG}-dev+${COMMITS_SINCE_TAG}-${SHA}"
+fi
 

@@ -178,16 +178,22 @@ jobs:
             cp "$file" "stable_release_dir/gerbv_${TAG}_${OS_SHORT}${EXT}"
           fi
         done
+        if [[ ${{ github.ref_type == 'tag' }} == true ]]; then
+          echo ':heavy_check_mark:`gerbv ${{ github.ref_name }}` built from commit ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})) on ${{ env.RELEASE_DATE }}.' > GH_Release_Changelog.md
+        else
+          echo ':heavy_check_mark:`gerbv` built from latest commit ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})) on ${{ env.RELEASE_DATE }}.' > GH_Release_Changelog.md
+          echo -e "\n:scroll: Build log: https://github.com/${{ github.repository }}/commit/${{ github.sha }}/checks?check_suite_id=${{ github.run_id }}" >> GH_Release_Changelog.md
+        fi
+        echo -e "\n### Changes:\n" >> GH_Release_Changelog.md
+        # get recent development news
+        sed -e '0,/^==*/d' -e '0,/^==*/d' -e '/^==*/,$d' NEWS >> GH_Release_Changelog.md
       if: ${{ success() && github.event_name == 'push' && !matrix.code_coverage }}
 
     - name: Create continuous release
       uses: softprops/action-gh-release@v2
       with:
         files: "continuous_release_dir/*"
-        body: |
-          :heavy_check_mark:`gerbv` built from latest commit ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})) on ${{ env.RELEASE_DATE }}.
-
-          :scroll: Build log: https://github.com/${{ github.repository }}/commit/${{ github.sha }}/checks?check_suite_id=${{ github.run_id }}
+        body_path: GH_Release_Changelog.md
         draft: false
         name: "Continuous build ${{ env.RELEASE_DATE }}"
         prerelease: true
@@ -202,8 +208,7 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: "stable_release_dir/*"
-        body: |
-          :heavy_check_mark:`gerbv ${{ github.ref_name }}` built from commit ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})) on ${{ env.RELEASE_DATE }}.
+        body_path: GH_Release_Changelog.md
         target_commitish: ${{ github.sha }}
         draft: true
         prerelease: false
